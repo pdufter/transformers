@@ -239,6 +239,15 @@ class BertSelfAttention(nn.Module):
 
         # Take the dot product between "query" and "key" to get the raw attention scores.
         attention_scores = torch.matmul(query_layer, key_layer.transpose(-1, -2))
+
+        # Add CNN
+        if self.add_cnn:
+            conv_attention_probs = []
+            for head in range(self.num_attention_heads):
+                tmp_out = self.convolutions[head](attention_scores[:, head, :, :])
+                conv_attention_probs.append(tmp_out[:, None, :, :])
+            attention_scores = torch.cat(conv_attention_probs, dim=1)
+
         attention_scores = attention_scores / math.sqrt(self.attention_head_size)
         if attention_mask is not None:
             # Apply the attention mask is (precomputed for all layers in BertModel forward() function)
@@ -246,14 +255,6 @@ class BertSelfAttention(nn.Module):
 
         # Normalize the attention scores to probabilities.
         attention_probs = nn.Softmax(dim=-1)(attention_scores)
-
-        # Add CNN
-        if self.add_cnn:
-            conv_attention_probs = []
-            for head in range(self.num_attention_heads):
-                tmp_out = self.convolutions[head](attention_probs[:, head, :, :])
-                conv_attention_probs.append(tmp_out[:, None, :, :])
-            attention_probs = torch.cat(conv_attention_probs, dim=1)
 
         # This is actually dropping out entire tokens to attend to, which might
         # seem a bit unusual, but is taken from the original Transformer paper.
