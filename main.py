@@ -324,7 +324,8 @@ def load_and_cache_examples(args, task, tokenizer, evaluate=False):
         all_labels = torch.tensor([f.label for f in features], dtype=torch.float)
 
     dataset = TensorDataset(all_input_ids, all_attention_mask, all_token_type_ids, all_labels)
-    dataset = Subset(dataset, list(range(args.first_n_examples)))
+    if not evaluate:
+        dataset = Subset(dataset, list(range(args.first_n_examples)))
     return dataset
 
 
@@ -487,6 +488,7 @@ def main():
                                           num_labels=num_labels,
                                           finetuning_task=args.task_name,
                                           cache_dir=args.cache_dir if args.cache_dir else None)
+    config.add_cnn = True
     tokenizer = tokenizer_class.from_pretrained(args.tokenizer_name if args.tokenizer_name else args.model_name_or_path,
                                                 do_lower_case=args.do_lower_case,
                                                 cache_dir=args.cache_dir if args.cache_dir else None)
