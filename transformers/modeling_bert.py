@@ -240,7 +240,6 @@ class BertSelfAttention(nn.Module):
         # Add CNN
         if self.add_cnn:
             pass
-            #print("WILL ADD CNN HERE.")
 
         # This is actually dropping out entire tokens to attend to, which might
         # seem a bit unusual, but is taken from the original Transformer paper.
