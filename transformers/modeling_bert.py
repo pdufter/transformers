@@ -206,9 +206,13 @@ class BertSelfAttention(nn.Module):
 
         if self.add_cnn:
             print("ADDING CNN")
+            padding = (config.cnn_filter_width - 1) / 2
             self.convolutions = []
             for i in range(self.num_attention_heads):
-                self.convolutions.append(nn.Conv1d(config.max_seq_length, config.max_seq_length, config.cnn_filter_width).to('cuda'))
+                self.convolutions.append(nn.Conv1d(config.max_seq_length, 
+                    config.max_seq_length, 
+                    config.cnn_filter_width, 
+                    padding=padding).to('cuda'))
 
     def transpose_for_scores(self, x):
         new_x_shape = x.size()[:-1] + (self.num_attention_heads, self.attention_head_size)
