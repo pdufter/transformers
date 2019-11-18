@@ -239,7 +239,13 @@ class BertSelfAttention(nn.Module):
 
         # Add CNN
         if self.add_cnn:
-            pass
+            B, H, T, _ = attention_probs.size()
+            conv_attention_probs = []
+            for head in range(H):
+                conv = torch.nn.Conv1d(T, T, 1)
+                tmp_out = conv(attention_probs[:, head, :, :])
+                conv_attention_probs.append(tmp_out[:, None, :, :])
+            attention_probs = torch.cat(conv_attention_probs, dim=1)
 
         # This is actually dropping out entire tokens to attend to, which might
         # seem a bit unusual, but is taken from the original Transformer paper.
