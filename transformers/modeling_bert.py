@@ -204,6 +204,13 @@ class BertSelfAttention(nn.Module):
 
         self.add_cnn = config.add_cnn
 
+        if self.add_cnn:
+            self.convolutions = []
+            for i in range(self.num_attention_heads):
+                self.convolutions.append(torch.nn.Conv1d(config.max_seq_length, config.max_seq_length, 1))
+            
+
+
     def transpose_for_scores(self, x):
         new_x_shape = x.size()[:-1] + (self.num_attention_heads, self.attention_head_size)
         x = x.view(*new_x_shape)
@@ -239,11 +246,9 @@ class BertSelfAttention(nn.Module):
 
         # Add CNN
         if self.add_cnn:
-            B, H, T, _ = attention_probs.size()
             conv_attention_probs = []
-            for head in range(H):
-                conv = torch.nn.Conv1d(T, T, 1)
-                tmp_out = conv(attention_probs[:, head, :, :])
+            for head in range(self.num_attention_heads):
+                tmp_out = self.convolutions[head](attention_probs[:, head, :, :])
                 conv_attention_probs.append(tmp_out[:, None, :, :])
             attention_probs = torch.cat(conv_attention_probs, dim=1)
 
