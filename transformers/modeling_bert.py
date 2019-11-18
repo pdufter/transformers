@@ -207,7 +207,7 @@ class BertSelfAttention(nn.Module):
         if self.add_cnn:
             self.convolutions = []
             for i in range(self.num_attention_heads):
-                self.convolutions.append(torch.nn.Conv1d(config.max_seq_length, config.max_seq_length, 1))
+                self.convolutions.append(nn.Conv1d(config.max_seq_length, config.max_seq_length, 1))
             
 
 
