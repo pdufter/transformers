@@ -418,6 +418,8 @@ def main():
     parser.add_argument('--server_ip', type=str, default='', help="For distant debugging.")
     parser.add_argument('--server_port', type=str, default='', help="For distant debugging.")
     parser.add_argument('--first_n_examples', type=int, default=10000)
+    parser.add_argument('--add_cnn', type=int, default=0)
+    parser.add_argument('--cnn_filter_width', type=int, default=1)
     args = parser.parse_args()
 
     if os.path.exists(args.output_dir) and os.listdir(args.output_dir) and args.do_train and not args.overwrite_output_dir:
@@ -488,7 +490,8 @@ def main():
                                           num_labels=num_labels,
                                           finetuning_task=args.task_name,
                                           cache_dir=args.cache_dir if args.cache_dir else None)
-    config.add_cnn = True
+    config.add_cnn = bool(args.add_cnn)
+    config.cnn_filter_width = args.cnn_filter_width
     config.max_seq_length = args.max_seq_length
     tokenizer = tokenizer_class.from_pretrained(args.tokenizer_name if args.tokenizer_name else args.model_name_or_path,
                                                 do_lower_case=args.do_lower_case,
