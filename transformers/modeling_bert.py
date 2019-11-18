@@ -205,6 +205,7 @@ class BertSelfAttention(nn.Module):
         self.add_cnn = config.add_cnn
 
         if self.add_cnn:
+            print("ADDING CNN")
             self.convolutions = []
             for i in range(self.num_attention_heads):
                 self.convolutions.append(nn.Conv1d(config.max_seq_length, config.max_seq_length, config.cnn_filter_width).to('cuda'))
