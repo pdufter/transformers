@@ -212,7 +212,8 @@ class BertSelfAttention(nn.Module):
                 self.convolutions.append(nn.Conv1d(config.max_seq_length, 
                     config.max_seq_length, 
                     config.cnn_filter_width, 
-                    padding=padding).to('cuda'))
+                    padding=padding, 
+                    bias=False).to('cuda'))
 
     def transpose_for_scores(self, x):
         new_x_shape = x.size()[:-1] + (self.num_attention_heads, self.attention_head_size)
