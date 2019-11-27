@@ -26,7 +26,7 @@ import random
 import numpy as np
 import torch
 from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
-                              TensorDataset, Subset)
+                              TensorDataset)
 from torch.utils.data.distributed import DistributedSampler
 
 try:
@@ -324,8 +324,6 @@ def load_and_cache_examples(args, task, tokenizer, evaluate=False):
         all_labels = torch.tensor([f.label for f in features], dtype=torch.float)
 
     dataset = TensorDataset(all_input_ids, all_attention_mask, all_token_type_ids, all_labels)
-    if not evaluate:
-        dataset = Subset(dataset, list(range(args.first_n_examples)))
     return dataset
 
 
@@ -417,9 +415,6 @@ def main():
                         help="For distributed training: local_rank")
     parser.add_argument('--server_ip', type=str, default='', help="For distant debugging.")
     parser.add_argument('--server_port', type=str, default='', help="For distant debugging.")
-    parser.add_argument('--first_n_examples', type=int, default=10000)
-    parser.add_argument('--add_cnn', type=int, default=0)
-    parser.add_argument('--cnn_filter_width', type=int, default=1)
     parser.add_argument('--diagonal_mask', type=int, default=0)
     parser.add_argument('--context_width', type=int, default=5)
     args = parser.parse_args()
@@ -492,17 +487,13 @@ def main():
                                           num_labels=num_labels,
                                           finetuning_task=args.task_name,
                                           cache_dir=args.cache_dir if args.cache_dir else None)
-    config.add_cnn = bool(args.add_cnn)
-    config.cnn_filter_width = args.cnn_filter_width
-    config.max_seq_length = args.max_seq_length
     tokenizer = tokenizer_class.from_pretrained(args.tokenizer_name if args.tokenizer_name else args.model_name_or_path,
                                                 do_lower_case=args.do_lower_case,
                                                 cache_dir=args.cache_dir if args.cache_dir else None)
-    #model = model_class.from_pretrained(args.model_name_or_path,
-    #                                   from_tf=bool('.ckpt' in args.model_name_or_path),
-    #                                    config=config,
-    #                                   cache_dir=args.cache_dir if args.cache_dir else None)
-    model = BertForSequenceClassification(config)
+    model = model_class.from_pretrained(args.model_name_or_path,
+                                        from_tf=bool('.ckpt' in args.model_name_or_path),
+                                        config=config,
+                                        cache_dir=args.cache_dir if args.cache_dir else None)
 
     if args.local_rank == 0:
         torch.distributed.barrier()  # Make sure only the first process in distributed training will download model & vocab

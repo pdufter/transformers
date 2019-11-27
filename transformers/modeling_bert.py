@@ -202,7 +202,19 @@ class BertSelfAttention(nn.Module):
 
         self.dropout = nn.Dropout(config.attention_probs_dropout_prob)
 
-        self.add_cnn = config.add_cnn
+        self.add_cnn = bool(config.add_cnn)
+        self.diagonal_mask = bool(config.diagonal_mask)
+        self.context_width = config.context_width
+
+        if self.diagonal_mask:
+            # create mask tensor
+            L = config.max_seq_length
+            basically_infinity = 10000
+            self.diagonal_mask_tensor = torch.zeros((L, L))
+            for i in range(-self.context_width, self.context_width + 1):
+                self.diagonal_mask_tensor = self.diagonal_mask_tensor + torch.diag_embed(torch.tensor([basically_infinity] * L), offset=i)[:L, :L]
+
+            self.diagonal_mask_tensor = self.diagonal_mask_tensor - basically_infinity
 
         if self.add_cnn:
             print("ADDING CNN")
@@ -253,6 +265,11 @@ class BertSelfAttention(nn.Module):
         if attention_mask is not None:
             # Apply the attention mask is (precomputed for all layers in BertModel forward() function)
             attention_scores = attention_scores + attention_mask
+
+        # do the other masking here
+        if self.diagonal_mask:
+            # add mask to only leave diagonal scores
+            attention_scores = attention_scores + self.diagonal_mask_tensor
 
         # Normalize the attention scores to probabilities.
         attention_probs = nn.Softmax(dim=-1)(attention_scores)
