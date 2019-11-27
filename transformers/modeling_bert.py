@@ -207,6 +207,7 @@ class BertSelfAttention(nn.Module):
         self.context_width = config.context_width
 
         if self.diagonal_mask:
+            print("ADDING MASK")
             # create mask tensor
             L = config.max_seq_length
             basically_infinity = 10000
