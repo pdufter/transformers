@@ -216,7 +216,7 @@ class BertSelfAttention(nn.Module):
                 self.diagonal_mask_tensor = self.diagonal_mask_tensor + torch.diag_embed(torch.tensor([basically_infinity] * L), offset=i)[:L, :L]
 
             self.diagonal_mask_tensor = self.diagonal_mask_tensor - basically_infinity
-            self.diagonal_mask_tensor.to('cuda')
+            self.diagonal_mask_tensor = self.diagonal_mask_tensor.to('cuda')
 
         if self.add_cnn:
             print("ADDING CNN")
