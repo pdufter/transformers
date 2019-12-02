@@ -218,7 +218,7 @@ class BertSelfAttention(nn.Module):
             first_column = torch.zeros((L, L))
             first_column[:, 0] = basically_infinity
             first_column[:, -1] = basically_infinity
-            self.diagonal_mask_tensor = self.diagonal_mask_tensor + first_column
+            #self.diagonal_mask_tensor = self.diagonal_mask_tensor + first_column
             self.diagonal_mask_tensor = self.diagonal_mask_tensor - basically_infinity
             self.diagonal_mask_tensor = self.diagonal_mask_tensor.to('cuda')
 
