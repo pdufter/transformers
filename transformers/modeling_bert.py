@@ -215,6 +215,10 @@ class BertSelfAttention(nn.Module):
             for i in range(-self.context_width, self.context_width + 1):
                 self.diagonal_mask_tensor = self.diagonal_mask_tensor + torch.diag_embed(torch.tensor([basically_infinity] * L), offset=i)[:L, :L]
 
+            first_column = torch.zeros((L, L))
+            first_column[:, 0] = basically_infinity
+            first_column[:, -1] = basically_infinity
+            self.diagonal_mask_tensor = self.diagonal_mask_tensor + first_column
             self.diagonal_mask_tensor = self.diagonal_mask_tensor - basically_infinity
             self.diagonal_mask_tensor = self.diagonal_mask_tensor.to('cuda')
 
